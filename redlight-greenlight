@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Baby Bottle Feeding Pacer</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      font-family: sans-serif;
+      transition: background-color 0.5s ease;
+    }
+
+    #message {
+      font-size: 2em;
+      color: white;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      padding: 15px 30px;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 8px;
+      margin: 10px;
+      cursor: pointer;
+    }
+
+    #startBtn { background-color: green; color: white; }
+    #stopBtn { background-color: darkred; color: white; }
+  </style>
+</head>
+<body style="background-color: red;">
+  <div id="message">Paused</div>
+  <button id="startBtn" class="btn">Start Feeding</button>
+  <button id="stopBtn" class="btn">Stop</button>
+
+  <script>
+    const body = document.body;
+    const message = document.getElementById("message");
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+
+    let cycleTimeout = null;
+    let isRunning = false;
+
+    function beep() {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = ctx.createOscillator();
+      oscillator.type = "square";
+      oscillator.frequency.setValueAtTime(880, ctx.currentTime); // beep pitch
+      oscillator.connect(ctx.destination);
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + 0.2); // short beep
+    }
+
+    function startCycle() {
+      if (!isRunning) return;
+
+      body.style.backgroundColor = "green";
+      message.textContent = "Feed";
+      beep();
+
+      cycleTimeout = setTimeout(() => {
+        if (!isRunning) return;
+        body.style.backgroundColor = "red";
+        message.textContent = "Pause";
+        beep();
+
+        cycleTimeout = setTimeout(startCycle, 10000); // pause: 10s
+      }, 5000); // feed: 5s
+    }
+
+    startBtn.addEventListener("click", () => {
+      if (!isRunning) {
+        isRunning = true;
+        startCycle();
+      }
+    });
+
+    stopBtn.addEventListener("click", () => {
+      isRunning = false;
+      clearTimeout(cycleTimeout);
+      body.style.backgroundColor = "red";
+      message.textContent = "Paused";
+    });
+  </script>
+</body>
+</html>
